@@ -1,6 +1,7 @@
 package router
 
 import (
+	"api/controller/user"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -21,16 +22,17 @@ func Run() {
 }
 
 func UsersHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	user, err := user.Handler{}.Get(r.Context(), r)
 	if err != nil {
 		if errors.As(err, &err) {
-			http.Error(w, err.Error(), http.StatusNonAuthoritativeInfo)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 		} else {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+		return
 	}
-	users := []string{"user1", "user2", "user3"}
-	json.NewEncoder(w).Encode(users)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(user)
 }
 
 func UsersLoginHandler(w http.ResponseWriter, r *http.Request) {

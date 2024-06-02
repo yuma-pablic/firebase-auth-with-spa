@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 
+	userDomain "api/domain/user"
+
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
 )
@@ -18,7 +20,7 @@ func NewUserRepository(firebase *firebase.App) *userRepository {
 	return &userRepository{firebase}
 }
 
-func (ur *userRepository) Find(ctx context.Context, app *firebase.App) (*auth.UserRecord, error) {
+func (ur *userRepository) Find(ctx context.Context, app *firebase.App) (*userDomain.User, error) {
 	sessionID := ctxx.GetSessions(ctx).ID
 	// no set session
 	if sessionID == "" {
@@ -36,12 +38,16 @@ func (ur *userRepository) Find(ctx context.Context, app *firebase.App) (*auth.Us
 	if err != nil {
 		return nil, fmt.Errorf("error verifying ID token: %v", err)
 	}
-	u, err := client.GetUser(ctx, token.UID)
+	res, err := client.GetUser(ctx, token.UID)
 	if err != nil {
 		log.Fatalf("error getting user: %v\n", err)
 		return nil, err
 	}
-	return u, nil
+	user := &userDomain.User{
+		ID:    res.UID,
+		Email: res.Email,
+	}
+	return user, nil
 }
 
 func (ur *userRepository) Login(ctx context.Context, app *firebase.App) (*auth.UserRecord, error) {
