@@ -8,7 +8,10 @@ import (
 	"firebase.google.com/go/auth"
 )
 
-func getUser(ctx context.Context, app *firebase.App) *auth.UserRecord {
+func getUser(ctx context.Context, app *firebase.App, sessionKey string) *auth.UserRecord {
+	if sessionKey == "" {
+		return nil
+	}
 	uid := "some_string_uid"
 
 	// [START get_user_golang]
