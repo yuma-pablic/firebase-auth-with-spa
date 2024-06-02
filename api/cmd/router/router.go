@@ -3,6 +3,8 @@ package router
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/gorilla/sessions"
 )
 
 func Run() {
@@ -26,5 +28,20 @@ func UsersLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UsersLogoutHandler(w http.ResponseWriter, r *http.Request) {
+	clearCookie(w, r)
 	w.Write([]byte(`{"status": "success"}`))
+}
+
+var store = sessions.NewCookieStore([]byte("something-very-secret"))
+
+func clearCookie(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "session-name")
+	// セッションの値をクリアする
+	session.Values = make(map[interface{}]interface{})
+
+	// セッションを保存する
+	session.Save(r, w)
+
+	// クライアントにメッセージを送信する
+	w.Write([]byte("Session cleared"))
 }
