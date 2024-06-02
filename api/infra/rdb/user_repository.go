@@ -18,29 +18,32 @@ func NewUserRepository(firebase *firebase.App) *userRepository {
 	return &userRepository{firebase}
 }
 
-func (ur *userRepository) Find(ctx context.Context, app *firebase.App) *auth.UserRecord {
+func (ur *userRepository) Find(ctx context.Context, app *firebase.App) (*auth.UserRecord, error) {
 	sessionID := ctxx.GetSessions(ctx).ID
 	// no set session
 	if sessionID == "" {
-		return nil
+		return nil, nil
 	}
 	csrfToken := ctxx.GetCSRFToken(ctx)
 	if csrfToken == "" {
-		return nil
+		return nil, nil
 	}
 	client, err := app.Auth(ctx)
 	if err != nil {
 		log.Fatalf("error getting Auth client: %v\n", err)
+		return nil, err
 	}
 	token, err := client.VerifySessionCookie(ctx, sessionID)
 	if err != nil {
 		log.Fatalf("error verifying ID token: %v\n", err)
+		return nil, err
 	}
 	u, err := client.GetUser(ctx, token.UID)
 	if err != nil {
 		log.Fatalf("error getting user: %v\n", err)
+		return nil, err
 	}
-	return u
+	return u, nil
 }
 
 func (ur *userRepository) Login(ctx context.Context, app *firebase.App) (*auth.UserRecord, error) {
@@ -81,10 +84,12 @@ func (ur *userRepository) Logout(ctx context.Context, app *firebase.App) error {
 	client, err := app.Auth(ctx)
 	if err != nil {
 		log.Fatalf("error getting Auth client: %v\n", err)
+		return err
 	}
 	decodedClaims, err := client.VerifyIDTokenAndCheckRevoked(ctx, sessionID)
 	if err != nil {
 		log.Fatalf("error verifying ID token: %v\n", err)
+		return err
 	}
 	err = client.RevokeRefreshTokens(ctx, decodedClaims.UID)
 	if err != nil {
