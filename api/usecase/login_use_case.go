@@ -19,7 +19,7 @@ func NewLoginUserUseCase(ur userDomain.UserRepository) *LoginUserUseCase {
 }
 
 func (uc *LoginUserUseCase) Run(ctx context.Context) (*LoginUserUseCaseOutputDTO, error) {
-	user, err := uc.ur.Find()
+	user, err := uc.ur.Login()
 	if err != nil {
 		return nil, err
 	}

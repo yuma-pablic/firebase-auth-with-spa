@@ -9,7 +9,6 @@ import (
 	userDomain "api/domain/user"
 
 	firebase "firebase.google.com/go"
-	"firebase.google.com/go/auth"
 )
 
 type userRepository struct {
@@ -50,33 +49,32 @@ func (ur *userRepository) Find(ctx context.Context, app *firebase.App) (*userDom
 	return user, nil
 }
 
-func (ur *userRepository) Login(ctx context.Context, app *firebase.App) (*auth.UserRecord, error) {
+func (ur *userRepository) Login(ctx context.Context, app *firebase.App) error {
 	sessionID := ctxx.GetSessions(ctx).ID
 	// no set session
 	if sessionID == "" {
-		return nil, nil
+		return fmt.Errorf("no session")
 	}
 	csrfToken := ctxx.GetCSRFToken(ctx)
 	if csrfToken == "" {
-		return nil, nil
+		return fmt.Errorf("no csrf token")
 	}
 	client, err := app.Auth(ctx)
 	if err != nil {
-		log.Fatalf("error getting Auth client: %v\n", err)
-		return nil, err
+		return fmt.Errorf("error getting Auth client: %v", err)
 	}
 	const expiresIn = 5 * 60 * 1000
 	token, err := client.VerifySessionCookie(ctx, sessionID)
 	if err != nil {
 		log.Fatalf("error verifying ID token: %v\n", err)
 	}
-	a, err := client.SessionCookie(ctx, token.UID, expiresIn)
-	if err != nil {
-		log.Fatalf("error creating session cookie: %v\n", err)
-		return nil, err
-	}
-	fmt.Println(a)
-	return nil, err
+	fmt.Println(token)
+	// err = client.SessionCookie(ctx, token.UID, expiresIn)
+	// if err != nil {
+	// 	log.Fatalf("error creating session cookie: %v\n", err)
+	// 	return
+	// }
+	return nil
 }
 
 func (ur *userRepository) Logout(ctx context.Context, app *firebase.App) error {
