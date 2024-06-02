@@ -32,5 +32,23 @@ func (ur *userRepository) Find(ctx context.Context, app *firebase.App) *auth.Use
 		log.Fatalf("error verifying ID token: %v\n", err)
 	}
 	u, err := client.GetUser(ctx, token.UID)
+	if err != nil {
+		log.Fatalf("error getting user: %v\n", err)
+	}
+	return u
+}
+
+func (ur *userRepository) Create(ctx context.Context, app *firebase.App, email string, password string) *auth.UserRecord {
+	client, err := app.Auth(ctx)
+	if err != nil {
+		log.Fatalf("error getting Auth client: %v\n", err)
+	}
+	params := (&auth.UserToCreate{}).
+		Email(email).
+		Password(password)
+	u, err := client.CreateUser(ctx, params)
+	if err != nil {
+		log.Fatalf("error creating user: %v\n", err)
+	}
 	return u
 }
