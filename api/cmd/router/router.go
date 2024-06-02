@@ -2,37 +2,21 @@ package router
 
 import (
 	"api/controller/user"
-	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/gorilla/sessions"
 )
 
 func Run() {
+
 	server := http.Server{
 		Addr:    ":8080",
 		Handler: nil,
 	}
-	http.HandleFunc("/api/users/me", UsersHandler)
-	http.HandleFunc("/fuga", UsersHandler)
+	http.HandleFunc("/api/users/me", user.UserHandler.Get)
 	http.HandleFunc("/api/login", UsersLoginHandler)
 	http.HandleFunc("/api/delete/logout", UsersLogoutHandler)
 	server.ListenAndServe()
-}
-
-func UsersHandler(w http.ResponseWriter, r *http.Request) {
-	user, err := user.Handler{}.Get(r.Context(), r)
-	if err != nil {
-		if errors.As(err, &err) {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
 }
 
 func UsersLoginHandler(w http.ResponseWriter, r *http.Request) {
