@@ -23,18 +23,14 @@ func (ur *userRepository) Find(ctx context.Context, app *firebase.App) *auth.Use
 	if sessionID == "" {
 		return nil
 	}
-	// [START get_user_golang]
-	// Get an auth client from the firebase.App
 	client, err := app.Auth(ctx)
 	if err != nil {
 		log.Fatalf("error getting Auth client: %v\n", err)
 	}
-
-	u, err := client.GetUser(ctx, sessionID)
+	token, err := client.VerifySessionCookie(ctx, sessionID)
 	if err != nil {
-		log.Fatalf("error getting user %s: %v\n", sessionID, err)
+		log.Fatalf("error verifying ID token: %v\n", err)
 	}
-	log.Printf("Successfully fetched user data: %v\n", u)
-	// [END get_user_golang]
+	u, err := client.GetUser(ctx, token.UID)
 	return u
 }
