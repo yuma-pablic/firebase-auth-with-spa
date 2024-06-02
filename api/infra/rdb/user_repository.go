@@ -83,3 +83,27 @@ func (ur *userRepository) Logout(ctx context.Context, app *firebase.App) error {
 	}
 	return nil
 }
+
+func (ur *userRepository) Delete(ctx context.Context, app *firebase.App) error {
+	sessionID := ctxx.GetSessions(ctx).ID
+	// no set session
+	if sessionID == "" {
+		return nil
+	}
+	client, err := app.Auth(ctx)
+	if err != nil {
+		log.Fatalf("error getting Auth client: %v\n", err)
+		return err
+	}
+	decodedClaims, err := client.VerifySessionCookie(ctx, sessionID)
+	if err != nil {
+		log.Fatalf("error verifying ID token: %v\n", err)
+		return err
+	}
+	err = client.DeleteUser(ctx, decodedClaims.UID)
+	if err != nil {
+		log.Fatalf("error deleting user: %)v\n", err)
+		return err
+	}
+	return nil
+}

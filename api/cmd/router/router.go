@@ -15,6 +15,7 @@ func Run() {
 	http.HandleFunc("/api/users/me", UsersHandler)
 	http.HandleFunc("/fuga", UsersHandler)
 	http.HandleFunc("/api/login", UsersLoginHandler)
+	http.HandleFunc("/api/delete/logout", UsersLogoutHandler)
 	server.ListenAndServe()
 }
 
