@@ -70,3 +70,16 @@ func UsersLoginHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	w.Write([]byte(`{"status": "success"}`))
 }
+
+func UsersLogoutHandler(w http.ResponseWriter, r *http.Request) {
+
+	// Set cookie policy for session cookie.
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session",
+		Value:    cookie,
+		MaxAge:   int(expiresIn.Seconds()),
+		HttpOnly: true,
+		Secure:   true,
+	})
+	w.Write([]byte(`{"status": "success"}`))
+}
