@@ -2,6 +2,8 @@ package ctxx
 
 import (
 	"context"
+
+	"github.com/gorilla/sessions"
 )
 
 type ctxKey string
@@ -10,13 +12,14 @@ const (
 	sessionID ctxKey = "sessions"
 )
 
-func SetSessionID(ctx context.Context, sessionID string) context.Context {
-	return context.WithValue(ctx, sessionID, sessionID)
+func SetSessions(ctx context.Context, sessions *sessions.Session) context.Context {
+	return context.WithValue(ctx, sessionID, sessions)
 }
-func GetSessions(ctx context.Context) string {
-	sessions, ok := ctx.Value(sessionID).(string)
+
+func GetSessions(ctx context.Context) *sessions.Session {
+	sessions, ok := ctx.Value(sessionID).(*sessions.Session)
 	if !ok {
-		return ""
+		return nil
 	}
 	return sessions
 }
