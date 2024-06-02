@@ -24,6 +24,10 @@ func (ur *userRepository) Find(ctx context.Context, app *firebase.App) *auth.Use
 	if sessionID == "" {
 		return nil
 	}
+	csrfToken := ctxx.GetCSRFToken(ctx)
+	if csrfToken == "" {
+		return nil
+	}
 	client, err := app.Auth(ctx)
 	if err != nil {
 		log.Fatalf("error getting Auth client: %v\n", err)
@@ -39,15 +43,20 @@ func (ur *userRepository) Find(ctx context.Context, app *firebase.App) *auth.Use
 	return u
 }
 
-func (ur *userRepository) Login(ctx context.Context, app *firebase.App) *auth.UserRecord {
+func (ur *userRepository) Login(ctx context.Context, app *firebase.App) (*auth.UserRecord, error) {
 	sessionID := ctxx.GetSessions(ctx).ID
 	// no set session
 	if sessionID == "" {
-		return nil
+		return nil, nil
+	}
+	csrfToken := ctxx.GetCSRFToken(ctx)
+	if csrfToken == "" {
+		return nil, nil
 	}
 	client, err := app.Auth(ctx)
 	if err != nil {
 		log.Fatalf("error getting Auth client: %v\n", err)
+		return nil, err
 	}
 	const expiresIn = 5 * 60 * 1000
 	token, err := client.VerifySessionCookie(ctx, sessionID)
@@ -57,9 +66,10 @@ func (ur *userRepository) Login(ctx context.Context, app *firebase.App) *auth.Us
 	a, err := client.SessionCookie(ctx, token.UID, expiresIn)
 	if err != nil {
 		log.Fatalf("error creating session cookie: %v\n", err)
+		return nil, err
 	}
 	fmt.Println(a)
-	return nil
+	return nil, err
 }
 
 func (ur *userRepository) Logout(ctx context.Context, app *firebase.App) error {
