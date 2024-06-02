@@ -1,5 +1,5 @@
 package user
 
 type UserRepository interface {
-	CreateUser() error
+	Find() (*User, error)
 }
