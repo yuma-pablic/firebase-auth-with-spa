@@ -22,21 +22,19 @@ func (ur *userRepository) Find(ctx context.Context, app *firebase.App) (*auth.Us
 	sessionID := ctxx.GetSessions(ctx).ID
 	// no set session
 	if sessionID == "" {
-		return nil, nil
+		return nil, fmt.Errorf("no session")
 	}
 	csrfToken := ctxx.GetCSRFToken(ctx)
 	if csrfToken == "" {
-		return nil, nil
+		return nil, fmt.Errorf("no csrf token")
 	}
 	client, err := app.Auth(ctx)
 	if err != nil {
-		log.Fatalf("error getting Auth client: %v\n", err)
-		return nil, err
+		return nil, fmt.Errorf("error getting Auth client: %v", err)
 	}
 	token, err := client.VerifySessionCookie(ctx, sessionID)
 	if err != nil {
-		log.Fatalf("error verifying ID token: %v\n", err)
-		return nil, err
+		return nil, fmt.Errorf("error verifying ID token: %v", err)
 	}
 	u, err := client.GetUser(ctx, token.UID)
 	if err != nil {

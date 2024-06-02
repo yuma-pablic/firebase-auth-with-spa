@@ -2,6 +2,7 @@ package router
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -20,7 +21,15 @@ func Run() {
 }
 
 func UsersHandler(w http.ResponseWriter, r *http.Request) {
-	users := []string{"Alice", "Bob", "Charlie"}
+	err := r.ParseForm()
+	if err != nil {
+		if errors.As(err, &err) {
+			http.Error(w, err.Error(), http.StatusNonAuthoritativeInfo)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+	users := []string{"user1", "user2", "user3"}
 	json.NewEncoder(w).Encode(users)
 }
 
